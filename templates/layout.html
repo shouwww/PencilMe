@@ -1,0 +1,22 @@
+<!-- templates/layout.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}PencilMe{% endblock %}</title>
+</head>
+<body>
+
+<!-- ✅ 共通の進捗ナビゲーション -->
+<div style="display:flex; gap: 10px; margin-bottom: 20px;">
+  <a href="/" style="text-decoration:none;">📸 撮影</a> >
+  <a href="/select" style="text-decoration:none;">🎨 似顔絵選択</a> >
+  <a href="/processing" style="text-decoration:none;">⚙️ 似顔絵作成中</a> >
+  <a href="/signature" style="text-decoration:none;">✍️ 手書きサイン</a>
+</div>
+
+<!-- ✅ 各ページの中身 -->
+{% block content %}{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,104 @@
+{% extends "layout.html" %}
+
+{% block title %}カメラ画像処理アプリ | PencilMe{% endblock %}
+
+{% block content %}
+
+<form id="startForm" action="/start" method="post" style="display:inline;">
+  <button id="startButton" type="submit">▶ Start</button>
+</form>
+<form id="stopForm" action="/stop" method="post" style="display:inline;">
+  <button id="stopButton" type="submit">■ Stop</button>
+</form>
+<a href="/settings"><button>⚙ Settings</button></a>
+
+<h2>リアルタイム映像</h2>
+<img src="/video_feed" width="640">      
+
+<h2>Cartoon</h2>
+<img src="{{ url_for('static', filename='cartoon.jpg') }}" width="320">
+
+<h2>Image History</h2>
+<div id="history">
+    <!-- JSで動的に画像を追加 -->
+</div>
+
+<!-- ポップアップ（保存完了通知） -->
+<div id="popup" style="
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #4CAF50;
+  color: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  z-index: 1000;
+  font-size: 16px;
+">
+保存完了！
+</div>
+
+<script>
+let loadedImages = new Set();
+let saveCompleted = false;
+
+function updateHistory() {
+  fetch('/history_images')
+    .then(response => response.json())
+    .then(images => {
+      const container = document.getElementById("history");
+      images.forEach(img => {
+        if (!loadedImages.has(img)) {
+          const imageElem = document.createElement("img");
+          imageElem.src = "/static/tmp_img/" + img + "?t=" + new Date().getTime();
+          imageElem.width = 60;
+          imageElem.style.margin = "2px";
+          container.appendChild(imageElem);
+          loadedImages.add(img);
+        }
+      });
+
+      if (images.length >= 15 && !saveCompleted) {
+        showPopup("保存完了！");
+        saveCompleted = true;
+      }
+    });
+}
+
+function showPopup(message) {
+  const popup = document.getElementById("popup");
+  popup.innerText = message;
+  popup.style.display = "block";
+  popup.style.opacity = 1;
+
+  setTimeout(() => {
+    popup.style.opacity = 0;
+    setTimeout(() => {
+      popup.style.display = "none";
+    }, 300);
+  }, 5000);
+}
+
+function updateStreamingStatus() {
+  fetch('/streaming_status')
+    .then(response => response.json())
+    .then(data => {
+      const startBtn = document.getElementById('startButton');
+      const stopBtn = document.getElementById('stopButton');
+      if (data.enabled) {
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+      } else {
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+      }
+    });
+}
+
+setInterval(updateHistory, 1000);
+setInterval(updateStreamingStatus, 1000);
+</script>
+
+{% endblock %}
